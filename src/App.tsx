@@ -1,35 +1,87 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import TodoForm from "./component/TodoForm";
+import TodoList from "./component/TodoList";
+import TodoFilter from "./component/TodoFilter";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+export interface Todo {
+  id: number;
+  text: string;
+  completed: boolean;
 }
 
-export default App
+export default function App() {
+  const [todos, setTodos] = useState<Todo[]>(() => {
+    const stored = localStorage.getItem("todos");
+    return stored ? JSON.parse(stored) : [];
+  });  
+  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
+
+  // 🔹 Load todos dari localStorage pas pertama kali app jalan
+  useEffect(() => {
+    const storedTodos = localStorage.getItem("todos");
+    if (storedTodos) {
+      setTodos(JSON.parse(storedTodos));
+    }
+  }, []);
+
+  // 🔹 Simpan todos ke localStorage setiap kali ada perubahan
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos]);
+
+  function handleAddTodo(text: string) {
+    const newTodo: Todo = {
+      id: Date.now(),
+      text,
+      completed: false,
+    };
+    setTodos((prev) => [...prev, newTodo]);
+  }
+
+  function handleToggleTodo(id: number) {
+    setTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  }
+
+  function handleDeleteTodo(id: number) {
+    setTodos((prev) => prev.filter((todo) => todo.id !== id));
+  }
+
+  function handleEditTodo(id: number, newText: string) {
+    setTodos((prev) =>
+      prev.map((todo) => (todo.id === id ? { ...todo, text: newText } : todo))
+    );
+  }
+
+  function handleFilterChange(newFilter: "all" | "active" | "completed") {
+    setFilter(newFilter);
+  }
+
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === "active") return !todo.completed;
+    if (filter === "completed") return todo.completed;
+    return true;
+  });
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-cyan-300 flex flex-col items-center py-10">
+      <h1 className="text-4xl font-extrabold tracking-wide mb-8 neon-text">
+        ⚡ Cyber Todo List ⚡
+      </h1>
+
+      <div className="w-full max-w-md bg-gray-800/60 rounded-2xl p-6 shadow-[0_0_20px_#00ffff80] space-y-6">
+        <TodoForm onAddTodo={handleAddTodo} />
+        <TodoFilter currentFilter={filter} onFilterChange={handleFilterChange} />
+        <TodoList
+          todos={filteredTodos}
+          onToggle={handleToggleTodo}
+          onDelete={handleDeleteTodo}
+          onEdit={handleEditTodo}
+        />
+      </div>
+    </div>
+  );
+}
