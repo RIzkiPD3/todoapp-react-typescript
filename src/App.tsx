@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TodoForm from "./component/TodoForm";
 import TodoList from "./component/TodoList";
 import TodoFilter from "./component/TodoFilter";
@@ -10,8 +10,24 @@ export interface Todo {
 }
 
 export default function App() {
-  const [todos, setTodos] = useState<Todo[]>([]);
+  const [todos, setTodos] = useState<Todo[]>(() => {
+    const stored = localStorage.getItem("todos");
+    return stored ? JSON.parse(stored) : [];
+  });  
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
+
+  // 🔹 Load todos dari localStorage pas pertama kali app jalan
+  useEffect(() => {
+    const storedTodos = localStorage.getItem("todos");
+    if (storedTodos) {
+      setTodos(JSON.parse(storedTodos));
+    }
+  }, []);
+
+  // 🔹 Simpan todos ke localStorage setiap kali ada perubahan
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos]);
 
   function handleAddTodo(text: string) {
     const newTodo: Todo = {
@@ -47,7 +63,7 @@ export default function App() {
   const filteredTodos = todos.filter((todo) => {
     if (filter === "active") return !todo.completed;
     if (filter === "completed") return todo.completed;
-    return true; // all
+    return true;
   });
 
   return (
