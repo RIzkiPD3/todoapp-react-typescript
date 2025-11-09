@@ -1,14 +1,19 @@
-interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
-}
+import TodoItem from "./TodoItem";
+import type { Todo } from "../App";
 
 interface TodoListProps {
   todos: Todo[];
+  onToggle: (id: number) => void;
+  onDelete: (id: number) => void;
+  onEdit: (id: number, newText: string) => void;
 }
 
-export default function TodoList({ todos }: TodoListProps) {
+export default function TodoList({
+  todos,
+  onToggle,
+  onDelete,
+  onEdit,
+}: TodoListProps) {
   if (todos.length === 0) {
     return (
       <p className="text-center text-gray-500 italic mt-4">
@@ -20,12 +25,13 @@ export default function TodoList({ todos }: TodoListProps) {
   return (
     <ul className="space-y-3 mt-4">
       {todos.map((todo) => (
-        <li
+        <TodoItem
           key={todo.id}
-          className="bg-gray-800/70 px-4 py-2 rounded-lg border border-cyan-500/20 text-cyan-200 hover:bg-gray-800/90 transition-all"
-        >
-          {todo.text}
-        </li>
+          todo={todo}
+          onToggle={onToggle}
+          onDelete={onDelete}
+          onEdit={onEdit}
+        />
       ))}
     </ul>
   );
