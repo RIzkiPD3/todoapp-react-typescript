@@ -1,5 +1,6 @@
 import { useState } from "react";
 import TodoForm from "./component/TodoForm";
+import TodoList from "./component/TodoList";
 
 interface Todo {
   id: number;
@@ -10,15 +11,14 @@ interface Todo {
 export default function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
 
-
-  const handleAddTodo = (text: string) => {
-    const newTodo = {
+  function handleAddTodo(text: string) {
+    const newTodo: Todo = {
       id: Date.now(),
       text,
       completed: false,
     };
     setTodos((prev) => [...prev, newTodo]);
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-cyan-300 flex flex-col items-center py-10">
@@ -28,12 +28,7 @@ export default function App() {
 
       <div className="w-full max-w-md bg-gray-800/60 rounded-2xl p-6 shadow-[0_0_20px_#00ffff80] space-y-6">
         <TodoForm onAddTodo={handleAddTodo} />
-
-        <div className="text-center text-gray-400 italic">
-          {todos.length === 0
-            ? "No tasks yet. Uploading mission data..."
-            : `Tasks loaded: ${todos.length}`}
-        </div>
+        <TodoList todos={todos} />
       </div>
     </div>
   );
